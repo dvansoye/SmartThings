@@ -1,0 +1,72 @@
+/**
+ *  Nest Auto Away
+ *
+ *  Copyright 2015 Darren Van Soye
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ *  in compliance with the License. You may obtain a copy of the License at:
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed
+ *  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing permissions and limitations under the License.
+ *
+ */
+definition(
+    name: "Nest Auto Away",
+    namespace: "dvansoye",
+    author: "Darren Van Soye",
+    description: "Nest changes Home/Away status based on mode.",
+    category: "My Apps",
+    iconUrl: "https://dl.dropboxusercontent.com/u/2421186/nestaway.png",
+    iconX2Url: "https://dl.dropboxusercontent.com/u/2421186/nestaway%402x.png")
+
+
+preferences {
+  section("Change these thermostats modes...") {
+    input "thermostats", "capability.thermostat", multiple: true
+  }
+}
+
+def installed()
+{
+	log.debug "Entering installed..."
+	subscribe(location, "mode", modeHandler)
+    log.debug "location.currentMode: ${location.currentMode}"
+	log.debug "Leaving installed..."
+}
+
+def updated()
+{
+    log.debug "Entering updated..."
+    unsubscribe()
+//	subscribe(presence1, "presence", presenceHandler)
+//  subscribe(mode1, "mode", modeHandler)
+	subscribe(location, "mode", modeHandler)
+    log.debug "location.currentMode: ${location.currentMode}"
+    log.debug "Leaving updated..."
+}
+
+//def presenceHandler(evt)
+def modeHandler(evt)
+{
+	log.debug "Entering modeHandler..."
+    def current = location.currentMode
+    log.debug "location.currentMode: ${current}"
+
+	if(current == "Home"){
+		thermostats?.present()
+//		thermostats?.auto()
+		log.debug "Nest is set to Home."
+	}
+	else if(current == "Away"){
+		thermostats?.away()
+//		thermostats?.off()
+		log.debug "Nest is set to Away."
+	}
+    else{
+		log.debug "Current mode is not Home or Away. No change."
+    }
+	log.debug "Leaving modeHandler..."
+}
